@@ -6,7 +6,7 @@
 #include<sys/stat.h>
 #include<sys/mman.h>
 
-#define DEBUG 1
+#define DEBUG 0
 #define BLOCKSIZE 4096
 
 int main(int argc, char* argv[]) {
@@ -24,10 +24,10 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Error: input doesn't exist or is not readable.\n");
         return 1;
     }
-    //Make sure output file exists and is writable
-    else if(access(argv[2], F_OK|W_OK) == -1) {
-        fprintf(stderr, "Error: output doesn't exist or is not writable.\n");
-        return 1;
+    //Make sure output file is writable; if it doesn't exist then we'll make it
+    else if(access(argv[2], W_OK) == -1) {
+        if(access(argv[2], F_OK) != -1) 
+            fprintf(stderr, "Error: output is not writable.\n");
     }
 
     //Make two pipes
@@ -104,8 +104,8 @@ int main(int argc, char* argv[]) {
         }
 
 
-        //Open file for reading
-        outFile = open(argv[2], O_WRONLY);
+        //Open file for writing
+        outFile = open(argv[2], O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
         if(outFile == -1) {
             fprintf(stderr, "Failed to open output file.\n");
 
